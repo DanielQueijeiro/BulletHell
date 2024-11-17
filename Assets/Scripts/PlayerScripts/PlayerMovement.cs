@@ -6,17 +6,28 @@ public class PlayerMovement : MonoBehaviour
     public float slowSpeed = 4f;
 
     public KeyCode switchKey;
-    
+
+    // Límites de movimiento
+    private float horizontalMin = -3.4f;
+    private float horizontalMax = 13f;
+    private float verticalMin = -4.5f;
+    private float verticalMax = 4.5f;
+
     void Update()
     {
-        if (Input.GetKey(switchKey))
-        {
-            transform.position += new Vector3(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")) * slowSpeed * Time.deltaTime;
-        }
-        else
-        {
-            transform.position += new Vector3(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")) * normalSpeed * Time.deltaTime;
-        }
-    }
+        // Calcular el movimiento
+        Vector3 movement = new Vector3(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")) 
+                           * (Input.GetKey(switchKey) ? slowSpeed : normalSpeed) 
+                           * Time.deltaTime;
 
+        // Actualizar la posición
+        Vector3 newPosition = transform.position + movement;
+
+        // Aplicar límites
+        newPosition.x = Mathf.Clamp(newPosition.x, horizontalMin, horizontalMax);
+        newPosition.y = Mathf.Clamp(newPosition.y, verticalMin, verticalMax);
+
+        // Establecer la nueva posición
+        transform.position = newPosition;
+    }
 }
