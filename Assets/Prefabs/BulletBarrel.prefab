@@ -64,6 +64,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BulletBarrel
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 6db43b36f61c3854a9c9b71ca79aee8d, type: 3}
+      propertyPath: m_TagString
+      value: Bullet
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -89,4 +93,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c59874f4c70893149982451b856d258a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 10
+  speed: 8
+  lifeTime: 10
