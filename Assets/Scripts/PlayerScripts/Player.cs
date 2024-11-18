@@ -12,8 +12,8 @@ public class Player : MonoBehaviour
     
     // Referencias a componentes
     [Header("References")]
-    [SerializeField] private MeshRenderer modelRenderer;  // Asignar desde el Inspector
-    // Alternativamente, puedes buscar todos los renderers hijos
+    [SerializeField] private MeshRenderer modelRenderer;
+
     private MeshRenderer[] allRenderers;
     
     private float invincibilityTimer;
@@ -25,13 +25,12 @@ public class Player : MonoBehaviour
     {
         hp = startHp;
         
-        // Si no se asignó el renderer en el Inspector, lo buscamos automáticamente
+
         if (modelRenderer == null)
         {
             modelRenderer = GetComponentInChildren<MeshRenderer>();
         }
-        
-        // Opcional: obtener todos los renderers hijos si el modelo tiene múltiples partes
+
         allRenderers = GetComponentsInChildren<MeshRenderer>();
     }
 
@@ -69,13 +68,7 @@ public class Player : MonoBehaviour
 
     void SetRenderersVisible(bool visible)
     {
-        // Opción 1: Usar un solo renderer específico
-        if (modelRenderer != null)
-        {
-            modelRenderer.enabled = visible;
-        }
 
-        // Opción 2: Afectar a todos los renderers hijos
         foreach (var renderer in allRenderers)
         {
             renderer.enabled = visible;
@@ -93,7 +86,7 @@ public class Player : MonoBehaviour
         if (hp <= 0)
         {
             SetRenderersVisible(true);
-            Destroy(gameObject);
+            GameManager.Instance.EndGame("Game Over", gameObject);
         }
         else
         {

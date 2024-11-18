@@ -6,7 +6,7 @@ public class BossHealth : MonoBehaviour
     private Boss bossHealth;
 
 
-    void Start()
+    void Update()
     {
         // Obtener el componente de salud del jefe
         if (boss != null)
