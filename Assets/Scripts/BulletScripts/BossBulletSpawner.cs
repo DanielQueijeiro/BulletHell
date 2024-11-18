@@ -11,7 +11,7 @@ public class BossBulletSpawner : MonoBehaviour
     public float minX = 3f, maxX = 8f;
     public Vector3 firePointOffset = new Vector3(0, 1f, 0);
     public float bulletSpeed = 5f;
-
+    private string shooterTag; // Nueva variable para el tag del disparador
 
     private enum ShootMode {Circle, Flower, Wave, Cross }
     private ShootMode currentMode;
@@ -24,6 +24,7 @@ public class BossBulletSpawner : MonoBehaviour
 
     void Start()
     {
+        shooterTag = gameObject.tag; // Guardamos el tag del boss
         currentMode = ShootMode.Cross;
         Vector3 startPos = transform.position;
         startPos.x = Mathf.Clamp(startPos.x, minX, maxX);
@@ -33,18 +34,7 @@ public class BossBulletSpawner : MonoBehaviour
         StartCoroutine(ChangeShootingMode());
     }
 
-    void Update()
-    {
-        if (isShooting && Time.time >= nextFireTime)
-        {
-            nextFireTime = Time.time + fireRate;
-            Shoot();
-        }
-        MoveBoss();
-        firePoint.position = transform.position + firePointOffset;
-    }
-
-
+    // Modificación en los métodos de disparo para incluir el shooterTag
     void FireCircle()
     {
         int bulletCount = 12;
@@ -55,6 +45,8 @@ public class BossBulletSpawner : MonoBehaviour
             float angle = i * angleStep;
             Quaternion rotation = Quaternion.Euler(0, 0, angle);
             GameObject bullet = Instantiate(projectile, firePoint.position, rotation);
+            // Asignamos el shooterTag a la bala
+            bullet.GetComponent<Bullet>().SetShooter(shooterTag);
             Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
             if (rb != null)
             {
@@ -71,11 +63,13 @@ public class BossBulletSpawner : MonoBehaviour
         for (int i = 0; i < petalCount; i++)
         {
             float angle = baseAngle + (i * (360f / petalCount));
-            for (int j = 0; j < 3; j++) // 3 bullets per petal
+            for (int j = 0; j < 3; j++)
             {
                 float spreadAngle = angle + (j - 1) * 10f;
                 Quaternion rotation = Quaternion.Euler(0, 0, spreadAngle);
                 GameObject bullet = Instantiate(projectile, firePoint.position, rotation);
+                // Asignamos el shooterTag a la bala
+                bullet.GetComponent<Bullet>().SetShooter(shooterTag);
                 Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
                 if (rb != null)
                 {
@@ -97,6 +91,8 @@ public class BossBulletSpawner : MonoBehaviour
             float angle = baseAngle + (i - bulletCount/2) * spreadAngle;
             Quaternion rotation = Quaternion.Euler(0, 0, angle);
             GameObject bullet = Instantiate(projectile, firePoint.position, rotation);
+            // Asignamos el shooterTag a la bala
+            bullet.GetComponent<Bullet>().SetShooter(shooterTag);
             Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
             if (rb != null)
             {
@@ -113,6 +109,8 @@ public class BossBulletSpawner : MonoBehaviour
             // Centro del cruz
             Quaternion rotation = Quaternion.Euler(0, 0, angle + angleOffset);
             GameObject bullet = Instantiate(projectile, firePoint.position, rotation);
+            // Asignamos el shooterTag a la bala
+            bullet.GetComponent<Bullet>().SetShooter(shooterTag);
             Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
             if (rb != null)
             {
@@ -126,6 +124,10 @@ public class BossBulletSpawner : MonoBehaviour
             GameObject bulletLeft = Instantiate(projectile, firePoint.position, rotationLeft);
             GameObject bulletRight = Instantiate(projectile, firePoint.position, rotationRight);
             
+            // Asignamos el shooterTag a las balas laterales
+            bulletLeft.GetComponent<Bullet>().SetShooter(shooterTag);
+            bulletRight.GetComponent<Bullet>().SetShooter(shooterTag);
+            
             Rigidbody2D rbLeft = bulletLeft.GetComponent<Rigidbody2D>();
             Rigidbody2D rbRight = bulletRight.GetComponent<Rigidbody2D>();
             
@@ -135,7 +137,6 @@ public class BossBulletSpawner : MonoBehaviour
         angleOffset += 5f;
     }
 
-    // El resto del código permanece igual...
     void Shoot()
     {
         switch (currentMode)
@@ -155,6 +156,18 @@ public class BossBulletSpawner : MonoBehaviour
         }
     }
 
+    // El resto de los métodos permanecen igual
+    void Update()
+    {
+        if (isShooting && Time.time >= nextFireTime)
+        {
+            nextFireTime = Time.time + fireRate;
+            Shoot();
+        }
+        MoveBoss();
+        firePoint.position = transform.position + firePointOffset;
+    }
+
     IEnumerator ChangeShootingMode()
     {
         while (true)
@@ -167,7 +180,6 @@ public class BossBulletSpawner : MonoBehaviour
     void MoveBoss()
     {
         Vector3 currentPos = transform.position;
-        // Aplicar límites tanto vertical como horizontalmente
         currentPos.y = Mathf.Clamp(currentPos.y, minY, maxY);
         currentPos.x = Mathf.Clamp(currentPos.x, minX, maxX);
         transform.position = currentPos;
@@ -184,7 +196,6 @@ public class BossBulletSpawner : MonoBehaviour
 
     void SetNewTargetPosition()
     {
-        // Manejar movimiento vertical
         if (transform.position.y >= maxY)
         {
             isMovingUp = false;
@@ -198,7 +209,6 @@ public class BossBulletSpawner : MonoBehaviour
             isMovingUp = Random.value > 0.5f;
         }
 
-        // Manejar movimiento horizontal
         if (transform.position.x >= maxX)
         {
             isMovingRight = false;
@@ -212,7 +222,6 @@ public class BossBulletSpawner : MonoBehaviour
             isMovingRight = Random.value > 0.5f;
         }
 
-        // Calcular nueva posición Y
         float targetY;
         if (isMovingUp)
         {
@@ -223,7 +232,6 @@ public class BossBulletSpawner : MonoBehaviour
             targetY = Mathf.Max(transform.position.y - Random.Range(2f, 4f), minY);
         }
 
-        // Calcular nueva posición X
         float targetX;
         if (isMovingRight)
         {
