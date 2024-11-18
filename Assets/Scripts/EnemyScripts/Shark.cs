@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Boss : MonoBehaviour
+public class Shark : MonoBehaviour
 {
     [Header("Stats")]
     public int startHp;
@@ -10,25 +10,24 @@ public class Boss : MonoBehaviour
     public float invincibilityDuration = 2f;
     public float blinkInterval = 0.2f;
     
-    [Header("Scale Pulse Settings")]
-    public float scalePulseDuration = 0.3f;
-    public float maxScaleMultiplier = 1.2f; // Aumentará hasta un 120% del tamaño original
+    [Header("Rotation Settings")]
+    public float rotationSpeed = 720f; // Velocidad de rotación en grados por segundo
     
     private float invincibilityTimer;
     private float blinkTimer;
-    private float scalePulseTimer;
-    private bool isInvincible = false;
-    private bool isPulsing = false;
+    public bool isInvincible = false;
+    private bool isRotating = false;
+    private float rotationAmount = 0f;
     private MeshRenderer meshRenderer;
     private bool isVisible = true;
-    private Vector3 originalScale;
-    private Vector3 targetScale;
+
+    public delegate void SharkDefeated(Shark shark);
+    public static event SharkDefeated OnSharkDefeated;
 
     void Start()
     {
         hp = startHp;
         meshRenderer = GetComponent<MeshRenderer>();
-        originalScale = transform.localScale;
     }
 
     void Update()
@@ -39,38 +38,21 @@ public class Boss : MonoBehaviour
             HandleBlinking();
         }
 
-        if (isPulsing)
+        if (isRotating)
         {
-            HandleScalePulse();
-        }
-    }
-
-    void HandleScalePulse()
-    {
-        if (scalePulseTimer < scalePulseDuration)
-        {
-            scalePulseTimer += Time.deltaTime;
-            float progress = scalePulseTimer / scalePulseDuration;
+            // Rotar el tiburón
+            float rotationThisFrame = rotationSpeed * Time.deltaTime;
+            transform.Rotate(0, rotationThisFrame, 0);
             
-            // Usar una curva sinusoidal para el efecto de pulso
-            float curveProgress = Mathf.Sin(progress * Mathf.PI);
-            float currentMultiplier = 1f + (maxScaleMultiplier - 1f) * curveProgress;
+            rotationAmount += rotationThisFrame;
             
-            transform.localScale = originalScale * currentMultiplier;
-            
-            if (progress >= 1f)
+            // Cuando completamos 360 grados, detenemos la rotación
+            if (rotationAmount >= 360f)
             {
-                isPulsing = false;
-                transform.localScale = originalScale; // Asegurar que vuelva al tamaño original
+                isRotating = false;
+                rotationAmount = 0f;
             }
         }
-    }
-
-    void StartScalePulse()
-    {
-        isPulsing = true;
-        scalePulseTimer = 0f;
-        targetScale = originalScale * maxScaleMultiplier;
     }
 
     void HandleInvincibility()
@@ -105,12 +87,14 @@ public class Boss : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        if(isInvincible)
+        if (isInvincible)
         {
             return;
         }
 
-        StartScalePulse(); // Iniciar el efecto de pulso
+        // Iniciar la rotación
+        isRotating = true;
+        rotationAmount = 0f;
 
         hp -= (int)damage;
         if (hp <= 0)
@@ -119,7 +103,9 @@ public class Boss : MonoBehaviour
             {
                 meshRenderer.enabled = true;
             }
-            GameManager.Instance.EndGame("Victoria", gameObject);
+
+            OnSharkDefeated?.Invoke(this);
+            Destroy(gameObject);
         }
         else
         {

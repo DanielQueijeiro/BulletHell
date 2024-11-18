@@ -33,7 +33,7 @@ public class Bullet : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter2D(Collider2D other)
     {
         
         // Ignorar colisión si la bala golpea a quien la disparó
@@ -48,6 +48,14 @@ public class Bullet : MonoBehaviour
             // Target has been hit - use script on target to deal damage to it
             float dmg = 1;
             other.GetComponent<Boss>().TakeDamage(dmg);
+            // Damage has been dealt, can destroy self now
+            Destroy(gameObject);
+        }
+        else if (other.CompareTag("Shark"))
+        {
+            // Target has been hit - use script on target to deal damage to it
+            float dmg = 1;
+            other.GetComponent<Shark>().TakeDamage(dmg);
             // Damage has been dealt, can destroy self now
             Destroy(gameObject);
         }

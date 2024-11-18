@@ -8,8 +8,8 @@ public class PlayerMovement : MonoBehaviour
     public KeyCode switchKey;
 
     // Límites de movimiento
-    private float horizontalMin = -3.4f;
-    private float horizontalMax = 13f;
+    private float horizontalMin = -5f;
+    private float horizontalMax = 11.5f;
     private float verticalMin = -4.5f;
     private float verticalMax = 4.5f;
 
