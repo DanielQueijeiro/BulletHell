@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Boss : MonoBehaviour
 {
     [Header("Stats")]
     public int startHp;
@@ -8,31 +8,21 @@ public class Player : MonoBehaviour
     
     [Header("Invincibility Settings")]
     public float invincibilityDuration = 2f;
-    public float blinkInterval = 0.2f;
-    
-    // Referencias a componentes
-    [Header("References")]
-    [SerializeField] private MeshRenderer modelRenderer;  // Asignar desde el Inspector
-    // Alternativamente, puedes buscar todos los renderers hijos
-    private MeshRenderer[] allRenderers;
+    public float blinkInterval = 0.2f;  // Tiempo entre cada parpadeo
     
     private float invincibilityTimer;
     private float blinkTimer;
     private bool isInvincible = false;
+    private MeshRenderer meshRenderer;
     private bool isVisible = true;
 
     void Start()
     {
         hp = startHp;
+        meshRenderer = GetComponent<MeshRenderer>();
         
-        // Si no se asignó el renderer en el Inspector, lo buscamos automáticamente
-        if (modelRenderer == null)
-        {
-            modelRenderer = GetComponentInChildren<MeshRenderer>();
-        }
-        
-        // Opcional: obtener todos los renderers hijos si el modelo tiene múltiples partes
-        allRenderers = GetComponentsInChildren<MeshRenderer>();
+        // Si el objeto tiene varios MeshRenderers hijos, puedes usar:
+        // meshRenderer = GetComponentInChildren<MeshRenderer>();
     }
 
     void Update()
@@ -48,10 +38,15 @@ public class Player : MonoBehaviour
     {
         invincibilityTimer -= Time.deltaTime;
 
+        // Verificar si la invulnerabilidad ha terminado
         if (invincibilityTimer <= 0)
         {
             isInvincible = false;
-            SetRenderersVisible(true);
+            // Asegurarnos de que el renderer quede visible al terminar
+            if (meshRenderer != null)
+            {
+                meshRenderer.enabled = true;
+            }
         }
     }
 
@@ -63,22 +58,11 @@ public class Player : MonoBehaviour
         {
             blinkTimer = blinkInterval;
             isVisible = !isVisible;
-            SetRenderersVisible(isVisible);
-        }
-    }
-
-    void SetRenderersVisible(bool visible)
-    {
-        // Opción 1: Usar un solo renderer específico
-        if (modelRenderer != null)
-        {
-            modelRenderer.enabled = visible;
-        }
-
-        // Opción 2: Afectar a todos los renderers hijos
-        foreach (var renderer in allRenderers)
-        {
-            renderer.enabled = visible;
+            
+            if (meshRenderer != null)
+            {
+                meshRenderer.enabled = isVisible;
+            }
         }
     }
 
@@ -92,14 +76,18 @@ public class Player : MonoBehaviour
         hp -= (int)damage;
         if (hp <= 0)
         {
-            SetRenderersVisible(true);
+            // Asegurarnos de que el renderer esté visible antes de destruir
+            if (meshRenderer != null)
+            {
+                meshRenderer.enabled = true;
+            }
             Destroy(gameObject);
         }
         else
         {
             isInvincible = true;
             invincibilityTimer = invincibilityDuration;
-            blinkTimer = blinkInterval;
+            blinkTimer = blinkInterval;  // Reiniciar el timer de parpadeo
         }
     }
 }

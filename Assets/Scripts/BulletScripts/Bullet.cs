@@ -5,13 +5,19 @@ using UnityEngine;
 public class Bullet : MonoBehaviour 
 {
     public float speed = 10f;
-    public float lifeTime = 2f;
+    public string shooterTag; // Nueva variable para almacenar quién disparó
 
     // Definimos los límites de la cámara
     private float minX = -9f;
     private float maxX = 9f;
-    private float minY = -5f;
+    private float minY = -5.5f;
     private float maxY = 5f;
+
+    // Método para establecer quién disparó la bala
+    public void SetShooter(string tag)
+    {
+        shooterTag = tag;
+    }
 
     private void Update()
     {
@@ -25,20 +31,33 @@ public class Bullet : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+    }
 
-        // Control del tiempo de vida
-        lifeTime -= Time.deltaTime;
-        if (lifeTime <= 0)
+    private void OnTriggerEnter(Collider other)
+    {
+        
+        // Ignorar colisión si la bala golpea a quien la disparó
+        if (other.CompareTag(shooterTag))
         {
+            return;
+        }
+
+        // Check if collision is target via tag - needs target gameObjects to be tagged properly
+        if (other.CompareTag("Boss"))
+        {
+            // Target has been hit - use script on target to deal damage to it
+            float dmg = 1;
+            other.GetComponent<Boss>().TakeDamage(dmg);
+            // Damage has been dealt, can destroy self now
+            Destroy(gameObject);
+        }
+        else if (other.CompareTag("Player"))
+        {
+            // Player has been hit - use script on player to deal damage to it
+            float dmg = 1;
+            other.GetComponent<Player>().TakeDamage(dmg);
+            // Damage has been dealt, can destroy self now
             Destroy(gameObject);
         }
     }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        // Handle collision logic here (e.g., destroy the bullet)
-        Destroy(gameObject);
-    }
-
-
 }
